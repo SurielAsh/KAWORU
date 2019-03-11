@@ -48,6 +48,8 @@ public:
 	inline int h(){return hight;}
 	inline int w(){return width;}
 	inline int size(){return hight*width;}
+	void expand(int w,int h);
+	void expand(int w,int h,double n);
 	matrix T();
 	matrix rot180();
 };
@@ -72,6 +74,28 @@ matrix::matrix(int ht,int wd,int mode):hight(ht),width(wd)
 		vini(self,row,ht);
 	}
 };
+void matrix::expand(int w,int h)
+{
+	vector<double> temp(width,(double)0);
+	self.insert(self.begin(),(int)h/2,temp);
+	self.insert(self.end(),h-(int)h/2,temp);
+	for(auto a:self)
+	{
+		a.insert(a.begin(),(int)w/2,(double)0);
+		a.insert(a.end(),w-(int)w/2,(double)0);
+	}
+}
+void matrix::expand(int w,int h,double n)
+{
+	vector<double> temp(width,n);
+	self.insert(self.begin(),(int)h/2,temp);
+	self.insert(self.end(),h-(int)h/2,temp);
+	for(auto a:self)
+	{
+		a.insert(a.begin(),(int)w/2,n);
+		a.insert(a.end(),w-(int)w/2,n);
+	}
+}
 matrix matrix::T()
 {
 	matrix temp(hight,width);
