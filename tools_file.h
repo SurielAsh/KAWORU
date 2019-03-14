@@ -13,14 +13,14 @@ using std::vector;
 using cv::Mat;
 using cv::Mat_;
 
-matrix getimg_grayscale(char *path)
+Matrix getimg_grayscale(char *path)
 {
 	Mat image = cv::imread(path, 0);
 	if(image.empty())
 		fprintf(stderr, "无法加载图片 %s\n", path);
 	int w = image.cols;
 	int h = image.rows;
-	matrix target(h,w);
+	Matrix target(h,w);
 	Mat_<uchar>::iterator it = image.begin<uchar>();
 	for(int x=0;x<w;x++)
 	{

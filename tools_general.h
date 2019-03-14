@@ -35,25 +35,28 @@ void vini(vector<vector<T>> &v,vector<T> &t,int n)
 	for(int i=0;i<n;i++)
 		v.push_back(t);
 }
-class matrix{
+class Matrix{
 private:
 	vector<double> row;
 	vector<double> column;
 	int hight,width;
 public:
 	vector<vector<double>> self;
-	matrix()=default;
-	matrix(int ht,int wd,int mode);
-	matrix(int ht,int wd):hight(ht),width(wd){vini(row,0.,wd);vini(self,row,ht);}
+	Matrix()=default;
+	Matrix(int ht,int wd,int mode);
+	Matrix(int ht,int wd):hight(ht),width(wd){vini(row,0.,wd);vini(self,row,ht);}
 	inline int h(){return hight;}
 	inline int w(){return width;}
 	inline int size(){return hight*width;}
 	void expand(int w,int h);
 	void expand(int w,int h,double n);
-	matrix T();
-	matrix rot180();
+	vector<std::vector<double, std::allocator<double>>, std::allocator<std::vector<double, std::allocator<double>>>>::iterator begin(){return self.begin();}
+    vector<std::vector<double, std::allocator<double>>, std::allocator<std::vector<double, std::allocator<double>>>>::iterator end(){return self.end();}
+	vector<double>& operator[] (int i);
+	Matrix T();
+	Matrix rot180();
 };
-matrix::matrix(int ht,int wd,int mode):hight(ht),width(wd)
+Matrix::Matrix(int ht,int wd,int mode):hight(ht),width(wd)
 {
 	if(mode==0)
 	{
@@ -74,7 +77,7 @@ matrix::matrix(int ht,int wd,int mode):hight(ht),width(wd)
 		vini(self,row,ht);
 	}
 };
-void matrix::expand(int w,int h)
+void Matrix::expand(int w,int h)
 {
 	vector<double> temp(width,(double)0);
 	self.insert(self.begin(),(int)h/2,temp);
@@ -85,7 +88,7 @@ void matrix::expand(int w,int h)
 		a.insert(a.end(),w-(int)w/2,(double)0);
 	}
 }
-void matrix::expand(int w,int h,double n)
+void Matrix::expand(int w,int h,double n)
 {
 	vector<double> temp(width,n);
 	self.insert(self.begin(),(int)h/2,temp);
@@ -96,9 +99,19 @@ void matrix::expand(int w,int h,double n)
 		a.insert(a.end(),w-(int)w/2,n);
 	}
 }
-matrix matrix::T()
+vector<double>& Matrix::operator[] (int i)
 {
-	matrix temp(hight,width);
+    if(i<self.size())
+	return self[i];
+    else
+    {
+        std::cout<<"矩阵范围溢出"<<std::endl;
+        return self[0];
+    }
+}
+Matrix Matrix::T()
+{
+	Matrix temp(hight,width);
 	for(int x;x<width;x++)
 	{
 		for(int y;y<hight;y++)
@@ -114,9 +127,9 @@ matrix matrix::T()
 	}
 	return temp;
 }
-matrix matrix::rot180()
+Matrix Matrix::rot180()
 {
-	matrix temp(hight,width);
+	Matrix temp(hight,width);
 	for(int x;x<width;x++)
 	{
 		for(int y;y<hight;y++)
