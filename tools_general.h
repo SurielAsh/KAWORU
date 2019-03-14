@@ -80,23 +80,23 @@ Matrix::Matrix(int ht,int wd,int mode):hight(ht),width(wd)
 void Matrix::expand(int w,int h)
 {
 	vector<double> temp(width,(double)0);
-	self.insert(self.begin(),(int)h/2,temp);
-	self.insert(self.end(),h-(int)h/2,temp);
+	self.insert(self.begin(),(int)(h/2),temp);
+	self.insert(self.end(),h-(int)(h/2),temp);
 	for(auto a:self)
 	{
-		a.insert(a.begin(),(int)w/2,(double)0);
-		a.insert(a.end(),w-(int)w/2,(double)0);
+		a.insert(a.begin(),(int)(w/2),(double)0);
+		a.insert(a.end(),w-(int)(w/2),(double)0);
 	}
 }
 void Matrix::expand(int w,int h,double n)
 {
 	vector<double> temp(width,n);
-	self.insert(self.begin(),(int)h/2,temp);
-	self.insert(self.end(),h-(int)h/2,temp);
+	self.insert(self.begin(),(int)(h/2),temp);
+	self.insert(self.end(),h-(int)(h/2),temp);
 	for(auto a:self)
 	{
-		a.insert(a.begin(),(int)w/2,n);
-		a.insert(a.end(),w-(int)w/2,n);
+		a.insert(a.begin(),(int)(w/2),n);
+		a.insert(a.end(),w-(int)(w/2),n);
 	}
 }
 vector<double>& Matrix::operator[] (int i)
