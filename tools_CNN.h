@@ -27,6 +27,7 @@ public:
 	inline int size(){return self.size();}
 	Convolution pooling(int d,string mode);
 	Convolution convoluting();
+    vector<double>& operator[] (int i);
 };
 Convolution Convolution::pooling(int d,string mode)
 {
@@ -92,7 +93,16 @@ Convolution Convolution::pooling(int d,string mode)
 	}
 	return return_temp;
 }
-
+vector<double>& Convolution::operator[] (int i)
+{
+    if(i<self.size())
+        return self[i];
+    else
+    {
+        std::cout<<"矩阵范围溢出"<<std::endl;
+        return self[0];
+    }
+}
 class ConvolutionCore:public Convolution
 {
 private:
