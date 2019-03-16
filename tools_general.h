@@ -26,12 +26,14 @@ double rdm(int n,int presision)
 template <typename T>
 void vini(vector<T> &v,T par,int n)
 {
+    v.clear();
 	for(int i=0;i<n;i++)
 		v.push_back(par);
 }
 template <typename T>
 void vini(vector<vector<T>> &v,vector<T> &t,int n)
 {
+    v.clear();
 	for(int i=0;i<n;i++)
 		v.push_back(t);
 }
@@ -50,9 +52,14 @@ public:
 	inline int size(){return hight*width;}
 	void expand(int w,int h);
 	void expand(int w,int h,double n);
+    void lastExpand(int w,int h);
+    void lastExpand(int w,int h,double n);
 	vector<std::vector<double, std::allocator<double>>, std::allocator<std::vector<double, std::allocator<double>>>>::iterator begin(){return self.begin();}
     vector<std::vector<double, std::allocator<double>>, std::allocator<std::vector<double, std::allocator<double>>>>::iterator end(){return self.end();}
 	vector<double>& operator[] (int i);
+    Matrix operator+ (Matrix M1);
+    Matrix operator- (Matrix M1);
+    Matrix operator* (Matrix M1);
 	Matrix T();
 	Matrix rot180();
 };
@@ -99,14 +106,89 @@ void Matrix::expand(int w,int h,double n)
 		a.insert(a.end(),w-(int)(w/2),n);
 	}
 }
+void Matrix::lastExpand(int w,int h)
+{
+    vector<double> temp(width,(double)0);
+    self.insert(self.end(),h,temp);
+    for(auto a:self)
+        a.insert(a.end(),w,(double)0);
+}
+void Matrix::lastExpand(int w,int h,double n)
+{
+    vector<double> temp(width,n);
+    self.insert(self.end(),h,temp);
+    for(auto a:self)
+        a.insert(a.end(),w,n);
+}
 vector<double>& Matrix::operator[] (int i)
 {
     if(i<self.size())
 	return self[i];
     else
     {
-        std::cout<<"矩阵范围溢出"<<std::endl;
+        lastExpand(i-width,0);
+        std::cout<<"矩阵范围溢出,已用空数组补全，请注意矩阵访问的合法性"<<std::endl;
         return self[0];
+    }
+}
+Matrix Matrix::operator+ (Matrix M1)
+{
+    if(hight!=M1.h()||width!=M1.w())
+    {
+        std::cout << "矩阵维度不同，无法加减" << std::endl;
+        return *this;
+    }
+    else
+    {
+        Matrix temp(hight,width);
+        for(int x;x<width;x++)
+        {
+            for(int y;y<width;y++)
+            {
+                temp[x][y]=self[x][y]+M1[x][y];
+            }
+        }
+        return temp;
+    }
+}
+Matrix Matrix::operator- (Matrix M1)
+{
+    if(hight!=M1.h()||width!=M1.w())
+    {
+        std::cout << "矩阵维度不同，无法加减" << std::endl;
+        return *this;
+    }
+    else
+    {
+        Matrix temp(hight,width);
+        for(int x;x<width;x++)
+        {
+            for(int y;y<width;y++)
+            {
+                temp[x][y]=self[x][y]-M1[x][y];
+            }
+        }
+        return temp;
+    }
+}
+Matrix Matrix::operator* (Matrix M1)
+{
+    if(hight!=M1.h()||width!=M1.w())
+    {
+        std::cout << "矩阵维度不同，无法做哈达马积" << std::endl;
+        return *this;
+    }
+    else
+    {
+        Matrix temp(hight,width);
+        for(int x;x<width;x++)
+        {
+            for(int y;y<width;y++)
+            {
+                temp[x][y]=self[x][y]*M1[x][y];
+            }
+        }
+        return temp;
     }
 }
 Matrix Matrix::T()
