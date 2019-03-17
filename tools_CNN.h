@@ -166,4 +166,18 @@ Convolution convoluting(Convolution ori,ConvolutionCore core,int step)
 	}
 	return result;
 }
+double fullConnection(vector<double> m,Convolution ori)
+{
+    int i=0;
+    double sum=0;
+    for(auto v:ori.self)
+    {
+        for(auto a:v)
+        {
+            sum+=m[i]*a;
+            i++;
+        }
+    }
+    return sum;
+}
 #endif //KAWORU_TOOLSFORCNN_H

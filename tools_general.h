@@ -197,7 +197,8 @@ Matrix Matrix::T()
 	for(int x;x<width;x++)
 	{
 		for(int y;y<hight;y++)
-		{	for(int x;x<width;x++)
+		{
+		    for(int x;x<width;x++)
 			{
 				for(int y;y<hight;y++)
 				{
