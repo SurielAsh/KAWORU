@@ -7,9 +7,11 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <cmath>
 #include "tools_general.h"
 #include "tools_file.h"
 using std::string;
+using std::vector;
 
 class ConvolutionCore;
 
@@ -27,6 +29,7 @@ public:
 	Convolution(int wd,int ht):width(wd),hight(ht){Matrix temp(wd,ht);self=temp;}
 	inline int w(){return width;}
 	inline int h(){return hight;}
+    inline Matrix upsample(){return beforePooling;}
 	inline int size(){return self.size();}
 	Convolution pooling(int d,string mode);
 	Convolution relu();
@@ -179,5 +182,29 @@ double fullConnection(vector<double> m,Convolution ori)
         }
     }
     return sum;
+}
+
+vector<double> softMax(vector<double> ori)
+{
+    double sum=0;
+    vector<double> temp=ori;
+    for(auto &a:temp)
+    {
+        a = exp(a);
+        sum+=a;
+    }
+    for(auto &a:temp)
+    {
+       a=a/sum;
+    }
+    return temp;
+}
+
+inline double loss(double thr,double rslt,string type)
+{
+    if(type=="quadratic cost"&&type=="QC")
+    	return (thr-rslt)*(thr-rslt)/2;
+    else if(type=="cross entropy"&&type=="CE")
+    	return -(thr*log(rslt)+(1-thr)*log(1-rslt));
 }
 #endif //KAWORU_TOOLSFORCNN_H

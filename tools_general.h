@@ -222,4 +222,10 @@ Matrix Matrix::rot180()
 	}
 	return temp;
 }
+
+template <typename T>
+inline T derevition (T(*fun)(T,T),T rslt,T thr)
+{
+    return (fun(rslt+0.000000000001,thr)-fun(rslt,thr))/0.000000000001;
+}
 #endif //KAWORU_GENERALTOOLS_H
