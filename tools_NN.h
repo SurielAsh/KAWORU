@@ -8,47 +8,80 @@
 #include <string>
 #include <vector>
 #include <cmath>
+#include <map>
 #include "tools_general.h"
 #include "tools_file.h"
 using std::string;
 using std::vector;
+using std::map;
 
+typedef map<string,int> MODE_MAP;
+inline int ModeCode(string mode);
 class ConvolutionCore;
 
-class Convolution
+MODE_MAP mode_map;
+void mapIni(MODE_MAP &m) {
+    m.insert(MODE_MAP::value_type("max",1));
+    m.insert(MODE_MAP::value_type("average",2));
+    m.insert(MODE_MAP::value_type("relu",3));
+    m.insert(MODE_MAP::value_type("sigmoid",4));
+}
+
+class Nerv
 {
 private:
-	int width,hight;
-	Matrix beforePooling;
-	void expand(int w,int h){self.expand(w,h);width=self.w();hight=self.h();}
-	void expand(int w,int h,double n){self.expand(w,h,n);width=self.w();hight=self.h();}
+    vector<double> w;
 public:
-    friend Convolution convoluting(Convolution ori,ConvolutionCore core,int step);
-	Matrix self;
-	Convolution()= default;
-	Convolution(int wd,int ht):width(wd),hight(ht){Matrix temp(wd,ht);self=temp;}
+    vector<double> self;
+    Nerv()= default;
+    Nerv activationFunction(string mode);
+};
+Nerv Nerv::activationFunction(string mode)
+{
+    int modeCode = ModeCode(mode);
+    switch (modeCode) {
+        case 3:
+            for(auto &a:self)
+                a >= 0 ? a - a : a = 0;
+            break;
+        case 4:
+            for(auto &a:self)
+                a=1/(1+exp(-a));
+            break;
+    }
+}
+
+class ConvolutionNerv
+{
+private:
+    int width,hight;
+    void expand(int w,int h){self.expand(w,h);width=self.w();hight=self.h();}
+    void expand(int w,int h,double n){self.expand(w,h,n);width=self.w();hight=self.h();}
+public:
+    Matrix beforePooling;
+    Matrix self;
+    friend ConvolutionNerv convoluting(ConvolutionNerv ori,ConvolutionCore core,int step);
+	ConvolutionNerv()= default;
+    ConvolutionNerv(int wd,int ht):width(wd),hight(ht){Matrix temp(wd,ht);self=temp;}
 	inline int w(){return width;}
 	inline int h(){return hight;}
     inline Matrix upsample(){return beforePooling;}
 	inline int size(){return self.size();}
-	Convolution pooling(int d,string mode);
-	Convolution relu();
+	ConvolutionNerv pooling(int d,string mode);
+	ConvolutionNerv relu();
     vector<double>& operator[] (int i);
 };
-Convolution Convolution::pooling(int d,string mode)
+ConvolutionNerv ConvolutionNerv::pooling(int d,string mode)
 {
-	Convolution return_temp=*this;
+	ConvolutionNerv return_temp=*this;
 	int modeCode;
-	if(mode=="max")
-		modeCode=0;
-	else if(mode=="average")
-		modeCode=1;
+	modeCode=ModeCode(mode);
 	if((return_temp.width)%d!=0||(return_temp.hight)%d!=0)
 		expand(d-(return_temp.width)%d,d-(return_temp.hight)%d);
-	Convolution temp((return_temp.width)/d,(return_temp.hight)/d);
+	ConvolutionNerv temp((return_temp.width)/d,(return_temp.hight)/d);
 	switch(modeCode)
 	{
-		case 0:
+		case 1:
 			for(int ix=0,kx=0;ix<=return_temp.width-d;ix+=d,kx++)
 			{
 				for(int iy=0,ky=0;iy<=return_temp.hight-d;iy+=d,ky++)
@@ -72,7 +105,7 @@ Convolution Convolution::pooling(int d,string mode)
 				}
 			}
 			break;
-		case 1:
+		case 2:
 			for(int ix=0,kx=0;ix<=return_temp.width-d;ix+=d,kx++)
 			{
 				for(int iy=0,ky=0;iy<=return_temp.hight-d;iy+=d,ky++)
@@ -100,9 +133,9 @@ Convolution Convolution::pooling(int d,string mode)
 	}
 	return return_temp;
 }
-Convolution Convolution::relu()
+ConvolutionNerv ConvolutionNerv::relu()
 {
-	Convolution temp=*this;
+	ConvolutionNerv temp=*this;
 	for(auto &v:temp.self)
 	{
 		for(auto &a:v)
@@ -112,7 +145,7 @@ Convolution Convolution::relu()
 		}
 	}
 }
-vector<double>& Convolution::operator[] (int i)
+vector<double>& ConvolutionNerv::operator[] (int i)
 {
     if(i<self.size())
         return self[i];
@@ -123,7 +156,7 @@ vector<double>& Convolution::operator[] (int i)
     }
 }
 
-class ConvolutionCore:public Convolution
+class ConvolutionCore:public ConvolutionNerv
 {
 private:
 	int dimension;
@@ -147,11 +180,11 @@ void ConvolutionCore::coreInitialize(int absoluteRage)
 	}
 }
 
-Convolution convoluting(Convolution ori,ConvolutionCore core,int step)
+ConvolutionNerv convoluting(ConvolutionNerv ori,ConvolutionCore core,int step)
 {
     if((ori.h()-core.d()%step)!=0||(ori.w()-core.d()%step)!=0)
         ori.expand(step-(ori.h()-core.d()%step),step-(ori.w()-core.d()%step));
-    Convolution result((ori.w()-core.d())/step+1,(ori.h()-core.d())/step+1);
+    ConvolutionNerv result((ori.w()-core.d())/step+1,(ori.h()-core.d())/step+1);
 	for(int ix=0,kx=0;ix<=ori.w()-core.d();ix+=step,kx++)
 	{
 		for(int iy=0,ky=0;iy<=ori.h()-core.d();iy+=step,ky++)
@@ -169,7 +202,7 @@ Convolution convoluting(Convolution ori,ConvolutionCore core,int step)
 	}
 	return result;
 }
-double fullConnection(vector<double> m,Convolution ori)
+double fullConnection(vector<double> m,ConvolutionNerv ori)
 {
     int i=0;
     double sum=0;
@@ -206,5 +239,16 @@ inline double loss(double thr,double rslt,string type)
     	return (thr-rslt)*(thr-rslt)/2;
     else if(type=="cross entropy"&&type=="CE")
     	return -(thr*log(rslt)+(1-thr)*log(1-rslt));
+}
+
+inline int ModeCode(string mode)
+{
+    mapIni(mode_map);
+    MODE_MAP::iterator iter;
+    iter=mode_map.find(mode);
+    if(iter != mode_map.end())
+        return iter->second;
+    else
+        return 0;
 }
 #endif //KAWORU_TOOLSFORCNN_H
