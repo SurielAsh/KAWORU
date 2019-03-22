@@ -20,7 +20,7 @@ inline int ModeCode(string mode);
 class ConvolutionCore;
 
 MODE_MAP mode_map;
-void mapIni(MODE_MAP &m) {
+void MapIni(MODE_MAP &m) {
     m.insert(MODE_MAP::value_type("max",1));
     m.insert(MODE_MAP::value_type("average",2));
     m.insert(MODE_MAP::value_type("relu",3));
@@ -30,25 +30,27 @@ void mapIni(MODE_MAP &m) {
 class Nerv
 {
 private:
-    vector<double> w;
+    double bias;
 public:
-    vector<double> self;
+    vector<double> w;
+    string modename;
+    double self;
     Nerv()= default;
-    Nerv activationFunction(string mode);
+    double activationFunction(string mode);
 };
-Nerv Nerv::activationFunction(string mode)
+double Nerv::activationFunction(string mode)
 {
+    modename=mode;
     int modeCode = ModeCode(mode);
     switch (modeCode) {
         case 3:
-            for(auto &a:self)
-                a >= 0 ? a - a : a = 0;
+            self >= 0 ? self - self : self = 0;
             break;
         case 4:
-            for(auto &a:self)
-                a=1/(1+exp(-a));
+            self=1/(1+exp(-self));
             break;
     }
+    return self;
 }
 
 class ConvolutionNerv
@@ -202,7 +204,7 @@ ConvolutionNerv convoluting(ConvolutionNerv ori,ConvolutionCore core,int step)
 	}
 	return result;
 }
-double fullConnection(vector<double> m,ConvolutionNerv ori)
+double FullConnection(vector<double> m, ConvolutionNerv ori)
 {
     int i=0;
     double sum=0;
@@ -216,8 +218,19 @@ double fullConnection(vector<double> m,ConvolutionNerv ori)
     }
     return sum;
 }
+double FullConnection(vector<double> m, vector<Nerv> ori)
+{
+    int i=0;
+    double sum=0;
+    for(auto a:ori)
+    {
+            sum+=m[i]*a.self;
+            i++;
+    }
+    return sum;
+}
 
-vector<double> softMax(vector<double> ori)
+vector<double> SoftMax(vector<double> ori)
 {
     double sum=0;
     vector<double> temp=ori;
@@ -233,7 +246,7 @@ vector<double> softMax(vector<double> ori)
     return temp;
 }
 
-inline double loss(double thr,double rslt,string type)
+inline double Loss(double thr, double rslt, string type)
 {
     if(type=="quadratic cost"&&type=="QC")
     	return (thr-rslt)*(thr-rslt)/2;
@@ -243,12 +256,23 @@ inline double loss(double thr,double rslt,string type)
 
 inline int ModeCode(string mode)
 {
-    mapIni(mode_map);
+    MapIni(mode_map);
     MODE_MAP::iterator iter;
     iter=mode_map.find(mode);
     if(iter != mode_map.end())
         return iter->second;
     else
         return 0;
+}
+
+void BP(double learningRate,Nerv &n,vector<Nerv> ori,double err)
+{
+    for(int i=0;i<n.w.size();i++)
+    {
+        Nerv temp=n;
+        temp.self+=0.000000000001;
+        double AFErr=(temp.activationFunction(temp.modename)-n.activationFunction(n.modename))/0.000000000001;
+        n.w[i]-=learningRate*n.w[i]*AFErr*err;
+    }
 }
 #endif //KAWORU_TOOLSFORCNN_H
